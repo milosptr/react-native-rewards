@@ -13,13 +13,13 @@ jobs:
       # Install pnpm
       - uses: pnpm/action-setup@v4
 
-      # Setup Node.js and cache pnpm store
+      # Setup Node.js + cache pnpm store
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'pnpm'
 
-      # Install deps (no tests)
+      # Install deps only
       - run: pnpm install --frozen-lockfile
 
   publish-gpr:
@@ -30,20 +30,18 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
-  
-      # Setup pnpm
+
+      # Re-setup pnpm
       - uses: pnpm/action-setup@v4
-  
+
       # Setup Node.js + GitHub Packages registry
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           registry-url: https://npm.pkg.github.com/
-  
-      # Install deps
+
+      # Install deps & publish (skip git-branch check)
       - run: pnpm install --frozen-lockfile
-  
-      # Publish, skipping the git-branch check
       - run: |
           pnpm publish \
             --access public \
