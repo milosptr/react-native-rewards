@@ -1,49 +1,30 @@
-name: Node.js Package
+publish-gpr:
+  needs: build
+  runs-on: ubuntu-latest
+  permissions:
+    packages: write
+    contents: read
+  steps:
+    - uses: actions/checkout@v4
 
-on:
-  release:
-    types: [created]
+    # Setup pnpm
+    - uses: pnpm/action-setup@v4
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+    # Setup Node.js + GitHub Packages registry
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        registry-url: https://npm.pkg.github.com/
 
-      # Install pnpm
-      - uses: pnpm/action-setup@v4
+    # Install deps
+    - run: pnpm install --frozen-lockfile
 
-      # Setup Node.js and cache pnpm store
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'pnpm'
-
-      # Install deps (no tests)
-      - run: pnpm install --frozen-lockfile
-
-  publish-gpr:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      packages: write
-      contents: read
-    steps:
-      - uses: actions/checkout@v4
-
-      # Re-install pnpm & Node.js (pointing at GitHub Packages)
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          registry-url: https://npm.pkg.github.com/
-
-      # Install deps and publish
-      - run: pnpm install --frozen-lockfile
-      - run: |
-          pnpm publish \
-            --access public \
-            --registry https://npm.pkg.github.com/
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    # Publish, skipping the git-branch check
+    - run: |
+        pnpm publish \
+          --access public \
+          --registry https://npm.pkg.github.com/ \
+          --no-git-checks
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
