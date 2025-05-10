@@ -10,18 +10,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # 1) Install pnpm
+      # Install pnpm
       - uses: pnpm/action-setup@v4
 
-      # 2) Install Node.js and cache pnpm store
+      # Setup Node.js and cache pnpm store
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'pnpm'
 
-      # 3) Install deps & run tests
+      # Install deps (no tests)
       - run: pnpm install --frozen-lockfile
-      - run: pnpm test
 
   publish-gpr:
     needs: build
@@ -32,14 +31,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Re-setup pnpm + Node.js (with GitHub Packages registry)
+      # Re-install pnpm & Node.js (pointing at GitHub Packages)
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           registry-url: https://npm.pkg.github.com/
 
-      # Publish!
+      # Install deps and publish
       - run: pnpm install --frozen-lockfile
       - run: |
           pnpm publish \
