@@ -9,10 +9,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # 1) Install pnpm
+      - uses: pnpm/action-setup@v4
+
+      # 2) Install Node.js and cache pnpm store
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: pnpm ci
+          cache: 'pnpm'
+
+      # 3) Install deps & run tests
+      - run: pnpm install --frozen-lockfile
       - run: pnpm test
 
   publish-gpr:
@@ -23,11 +31,20 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
+
+      # Re-setup pnpm + Node.js (with GitHub Packages registry)
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           registry-url: https://npm.pkg.github.com/
-      - run: pnpm ci
-      - run: pnpm publish
+
+      # Publish!
+      - run: pnpm install --frozen-lockfile
+      - run: |
+          pnpm publish \
+            --access public \
+            --registry https://npm.pkg.github.com/
         env:
-          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
