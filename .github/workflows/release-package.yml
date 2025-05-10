@@ -1,4 +1,28 @@
-publish-gpr:
+name: Node.js Package
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Install pnpm
+      - uses: pnpm/action-setup@v4
+
+      # Setup Node.js and cache pnpm store
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      # Install deps (no tests)
+      - run: pnpm install --frozen-lockfile
+
+  publish-gpr:
   needs: build
   runs-on: ubuntu-latest
   permissions:
@@ -27,4 +51,3 @@ publish-gpr:
           --no-git-checks
       env:
         NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
